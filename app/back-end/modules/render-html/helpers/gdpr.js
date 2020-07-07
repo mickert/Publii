@@ -247,34 +247,51 @@ class Gdpr {
             `;
         }
 
-        let output = `
+        let output = /*html*/`
         <script>
             (function() {
+                if (!Array.isArray) Array.isArray = function(arg) {
+                    return Object.prototype.toString.call(arg) === '[object Array]';
+                }
+                
+                function isNodeList(arg) {
+                    return typeof arg === 'object' &&
+                        /^\\\[object (HTMLCollection|NodeList|Object)\\\]$/.test(Object.prototype.toString.call(arg)) &&
+                        (typeof arg.length === 'number') &&
+                        (arg.length === 0 || (typeof arg[0] === 'object' && arg[0].nodeType > 0));
+                }
+
                 function addScript (src, inline) {
-                    var newScript = document.createElement('script');
-
-                    if (src) {
-                        newScript.setAttribute('src', src);
+                    var argObjArr;
+                    if (typeof src === 'object') {
+                        if (Array.isArray(src) || isNodeList(src)) {
+                            if (!src.length) return;
+                            argObjArr = src;
+                        } else argObjArr = [src];
+                    } else argObjArr = [{ src: src, text: inline}];
+                    
+                    for (var i = 0; i < argObjArr.length; i++) {
+                        if (argObjArr[i].src || argObjArr[i].text ) {
+                            var newScript = document.createElement('script');
+                            if (argObjArr[i].src) newScript.setAttribute('src', argObjArr[i].src);
+                            if (argObjArr[i].text) newScript.text = argObjArr[i].text;
+                            if (argObjArr[i].async) newScript.setAttribute('async', 'async');
+                            if (argObjArr[i].defer) newScript.setAttribute('defer', 'defer');
+                            if (argObjArr[i].crossorigin) newScript.setAttribute('crossorigin', argObjArr[i].crossorigin);
+                            document.body.appendChild(newScript);
+                        }
                     }
-
-                    if (inline) {
-                        newScript.text = inline;
-                    }
-
-                    document.body.appendChild(newScript);
                 }
 
                 var popup = document.querySelector('.js-cookie-popup');
                 var checkboxes = popup.querySelectorAll('input[type="checkbox"]');
                 var save = popup.querySelector('button');
                 var currentConfig = localStorage.getItem('publii-gdpr-allowed-cookies');
-                var blockedScripts = document.querySelectorAll('script[type^="gdpr-blocker/"]');
+                var blockedScripts = document.querySelectorAll('script[type^="gdpr-blocker/"], script[type^="{{"][type*="gdprScriptBlocker"][type$="}}"]');
                 ${linkCode}
 
                 popup.addEventListener('click', function() {
-                    if (!popup.classList.contains('cookie-popup--is-sticky')) {
-                        popup.classList.add('cookie-popup--is-sticky');
-                    }
+                    if (!popup.classList.contains('cookie-popup--is-sticky')) popup.classList.add('cookie-popup--is-sticky');
                 });
 
                 save.addEventListener('click', function(e) {
@@ -283,48 +300,40 @@ class Gdpr {
                     popup.classList.remove('cookie-popup--is-sticky');
                     var allowedGroups = [];
 
+                    var scriptsSelector = '';
                     for (var i = 0; i < checkboxes.length; i++) {
                         if (checkboxes[i].checked) {
                             var groupName = checkboxes[i].getAttribute('name').replace('gdpr-', '');
-                            var scripts = document.querySelectorAll('script[type="gdpr-blocker/' + groupName + '"]');
-
-                            for (var j = 0; j < scripts.length; j++) {
-                                addScript(scripts[j].src, scripts[j].text);
-                            }
-
                             allowedGroups.push(groupName);
+                            if (scriptsSelector !== '') scriptsSelector += ', '; 
+                            scriptsSelector += 'script[type="gdpr-blocker/' + groupName + '"], script[type^="{{"][type*="gdprScriptBlocker"][type*=\\\'"' + groupName + '"\\\'][type$="}}"]';
                         }
                     }
+                    var scripts = (scriptsSelector !== '') ? document.querySelectorAll(scriptsSelector) : null;
+                    if (scripts && scripts.length) addScript(scripts);
 
                     localStorage.setItem('publii-gdpr-allowed-cookies', allowedGroups.join(','));
                     popup.classList.remove('cookie-popup--is-sticky');
 
                     setTimeout(function () {
-                        if (currentConfig !== null) {
-                            window.location.reload();
-                        }
+                        if (currentConfig !== null) window.location.reload();
                     }, 250);
                 });
 
                 if (currentConfig === null) {
                     popup.classList.add('cookie-popup--is-sticky');
-                } else {
-                    if (currentConfig !== '') {
-                        var allowedGroups = currentConfig.split(',');
+                } else if (currentConfig !== '') {
+                    var allowedGroups = currentConfig.split(',');
 
-                        for (var i = 0; i < allowedGroups.length; i++) {
-                            var scripts = document.querySelectorAll('script[type="gdpr-blocker/' + allowedGroups[i] + '"]');
-                            var checkbox = popup.querySelector('input[type="checkbox"][name="gdpr-' + allowedGroups[i] + '"]');
-
-                            if (checkbox) {
-                                checkbox.checked = true;
-                            }
-
-                            for (var j = 0; j < scripts.length; j++) {
-                                addScript(scripts[j].src, scripts[j].text);
-                            }
-                        }
+                    var scriptsSelector = '';
+                    for (var i = 0; i < allowedGroups.length; i++) {
+                        if (scriptsSelector !== '') scriptsSelector += ', '; 
+                        scriptsSelector += 'script[type="gdpr-blocker/' + allowedGroups[i] + '"], script[type^="{{"][type*="gdprScriptBlocker"][type*=\\\'"' + allowedGroups[i] + '"\\\'][type$="}}"]';
+                        var checkbox = popup.querySelector('input[type="checkbox"][name="gdpr-' + allowedGroups[i] + '"]');
+                        if (checkbox) checkbox.checked = true;
                     }
+                    var scripts = (scriptsSelector !== '') ? document.querySelectorAll(scriptsSelector) : null;
+                    if (scripts && scripts.length) addScript(scripts);
                 }
             })();
         </script>`;
