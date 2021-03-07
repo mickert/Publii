@@ -1,10 +1,10 @@
 class Gdpr {
     static popupHtmlOutput (configuration, renderer) {
-        let groups = ``;
 
+        let groups = ``;
         for (let i = 0; i < configuration.groups.length; i++) {
             if (configuration.groups[i].id === '-' || configuration.groups[i].id === '') {
-                groups += `
+                groups += /*html*/`
                 <input
                     id="gdpr-necessary"
                     name="gdpr-necessary"
@@ -17,7 +17,7 @@ class Gdpr {
                 continue;
             }
 
-            groups += `
+            groups += /*html*/`
             <input
                 id="gdpr-${configuration.groups[i].id}"
                 name="gdpr-${configuration.groups[i].id}"
@@ -27,8 +27,8 @@ class Gdpr {
             </label>`;
         }
 
-        let output = `
-        <div class="cookie-popup js-cookie-popup ${configuration.behaviour !== 'badge' ? 'cookie-popup--uses-link' : ''} ${configuration.behaviour !== 'link' ? 'cookie-popup--uses-badge' : ''}">
+        let output = /*html*/`
+        <div class="privc-popup js-privc-popup ${configuration.behaviour !== 'badge' ? 'privc-popup--uses-link' : ''} ${configuration.behaviour !== 'link' ? 'privc-popup--uses-badge' : ''}">
             ${configuration.popupTitlePrimary !== '' ? '<h2>' + configuration.popupTitlePrimary + '</h2>' : ''}
             
             <p>
@@ -41,22 +41,26 @@ class Gdpr {
             <form>
                 ${groups}
 
-                <p class="cookie-popup__save-wrapper">
-                    <button type="submit" class="cookie-popup__save">
-                        ${configuration.saveButtonLabel}
-                    </button>
+                <p class="privc-popup__save-wrapper">
+                <button type="submit" class="privc-popup__save">
+                    ${configuration.saveButtonLabel}
+                </button>
+                <button type="submit" class="privc-popup__allowAll">
+                    ${configuration.allowAllButtonLabel || 'Toestaan'}
+                </button>
                 </p>
             </form>
 
-            ${configuration.behaviour !== 'link' ? '<span class="cookie-popup-label">' + configuration.badgeLabel + '</span>' : ''}
-        </div>`;
+            ${configuration.behaviour !== 'link' ? '<span class="privc-popup-label">' + configuration.badgeLabel + '</span>' : ''}
+        </div>
+        `;
 
         return output;
     }
 
     static popupCssOutput () {
-        let output = `
-        .cookie-popup {
+        let output = /*css*/`
+        .privc-popup {
             background: #fff;
             border-radius: 2px;
             bottom: 1rem;
@@ -80,7 +84,7 @@ class Gdpr {
             z-index: 1000;
         }
 
-        .cookie-popup--uses-badge {
+        .privc-popup--uses-badge {
             background: #24a931;
             border-radius: 6px 6px 0 0;
             bottom: 0.6rem;
@@ -88,25 +92,25 @@ class Gdpr {
             padding: 0;
             -webkit-transition: all 0.24s ease-out;
             transition: all 0.24s ease-out;
-            width: 6.4rem;
+            width: 8rem;
         }
 
-        .cookie-popup.cookie-popup--uses-badge:hover,
-        .cookie-popup.cookie-popup--uses-badge.cookie-popup--uses-link:hover {
+        .privc-popup.privc-popup--uses-badge:hover,
+        .privc-popup.privc-popup--uses-badge.privc-popup--uses-link:hover {
             bottom: 2rem;
         }
 
-        .cookie-popup.cookie-popup--uses-badge.cookie-popup--uses-link.cookie-popup--is-sticky {
+        .privc-popup.privc-popup--uses-badge.privc-popup--uses-link.privc-popup--is-sticky {
             bottom: .6rem;
         }
 
-        .cookie-popup--uses-badge > h2,
-        .cookie-popup--uses-badge > p,
-        .cookie-popup--uses-badge > form {
+        .privc-popup--uses-badge > h2,
+        .privc-popup--uses-badge > p,
+        .privc-popup--uses-badge > form {
             display: none;
         }
 
-        .cookie-popup--is-sticky {
+        .privc-popup--is-sticky {
             border-radius: 2px;
             -webkit-transform: translateY(0);
             -ms-transform: translateY(0);
@@ -115,7 +119,7 @@ class Gdpr {
             transition: transform .8s ease 0s;
         }
 
-        .cookie-popup--uses-badge.cookie-popup--is-sticky {
+        .privc-popup--uses-badge.privc-popup--is-sticky {
             background: #ffffff;
             bottom: 1rem;
             height: auto;
@@ -124,7 +128,7 @@ class Gdpr {
         }
 
         @media (max-width:600px) {
-            .cookie-popup--uses-badge.cookie-popup--is-sticky {
+            .privc-popup--uses-badge.privc-popup--is-sticky {
                  bottom: 0 !important;
                  left: 0;
                  right: 0;
@@ -132,66 +136,66 @@ class Gdpr {
         }
 
         @media (min-width:600px) {
-            .cookie-popup--uses-badge.cookie-popup--is-sticky:hover {
+            .privc-popup--uses-badge.privc-popup--is-sticky:hover {
                  bottom: 1rem;
             }
         }
 
-        .cookie-popup--uses-badge.cookie-popup--is-sticky > h2,
-        .cookie-popup--uses-badge.cookie-popup--is-sticky > p,
-        .cookie-popup--uses-badge.cookie-popup--is-sticky > form {
+        .privc-popup--uses-badge.privc-popup--is-sticky > h2,
+        .privc-popup--uses-badge.privc-popup--is-sticky > p,
+        .privc-popup--uses-badge.privc-popup--is-sticky > form {
             display: block;
         }
 
-        .cookie-popup.cookie-popup--uses-link {
+        .privc-popup.privc-popup--uses-link {
             background: #fff;
             bottom: 0;
         }
 
-        .cookie-popup.cookie-popup--uses-badge.cookie-popup--uses-link {
+        .privc-popup.privc-popup--uses-badge.privc-popup--uses-link {
             background: #24a931;
             bottom: 0.6rem;
         }
 
-        .cookie-popup.cookie-popup--uses-badge.cookie-popup--uses-link.cookie-popup--is-sticky {
+        .privc-popup.privc-popup--uses-badge.privc-popup--uses-link.privc-popup--is-sticky {
             background: #fff;
         }
 
-        .cookie-popup--is-sticky.cookie-popup--uses-link {
+        .privc-popup--is-sticky.privc-popup--uses-link {
             -webkit-transform: translateY(-1rem);
             -ms-transform: translateY(-1rem);
             transform: translateY(-1rem);
         }
 
-        .cookie-popup > h2 {
+        .privc-popup > h2 {
             font-size: 20px;
             margin: 0;
         }
 
-        .cookie-popup > p {
+        .privc-popup > p {
             margin: 1rem 0 0;
         }
 
-        .cookie-popup input[type="checkbox"] + label {
+        .privc-popup input[type="checkbox"] + label {
             margin-right: 0.53333rem;
             white-space: nowrap;
         }
 
-        .cookie-popup input[type="checkbox"] + label::before {
+        .privc-popup input[type="checkbox"] + label::before {
             height: 20px;
             line-height: 20px;
             width: 20px;
             margin-right: 0.26667rem;
         }
 
-        .cookie-popup input[type="checkbox"]:disabled + label:before {
+        .privc-popup input[type="checkbox"]:disabled + label:before {
             content: "";
             background-color: #f6f6f6;
             background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 11 8'%3e%3cpolygon points='9.53 0 4.4 5.09 1.47 2.18 0 3.64 2.93 6.54 4.4 8 5.87 6.54 11 1.46 9.53 0' fill='%23999999'/%3e%3c/svg%3e");
         }
 
-        .cookie-popup__save {
-            background: #24a931;
+        .privc-popup__save, 
+        .privc-popup__allowAll {
             border: none !important;
             border-radius: 3px;
             -webkit-box-shadow: none;
@@ -200,18 +204,25 @@ class Gdpr {
             font-size: 13px;
             padding: 0.666rem 1.2rem;
         }
+        .privc-popup__save {
+            background: #6c757d;
+        }
+        .privc-popup__allowAll {
+            background: #24a931;
+            float: right;
+        }
 
-        .cookie-popup > form,
-        .cookie-popup__save-wrapper {
+        .privc-popup > form,
+        .privc-popup__save-wrapper {
             margin-top: 1.06667rem
         }
 
-        .cookie-popup__save:hover,
-        .cookie-popup__save:active {
+        .privc-popup__save:hover,
+        .privc-popup__save:active {
             opacity: 0.85;
         }
 
-        .cookie-popup-label {
+        .privc-popup-label {
             color: #fff;
             cursor: pointer;
             left: 50%;
@@ -223,7 +234,7 @@ class Gdpr {
             white-space: nowrap;
         }
 
-        .cookie-popup--is-sticky .cookie-popup-label {
+        .privc-popup--is-sticky .privc-popup-label {
             display: none;
         }
         `;
@@ -232,7 +243,7 @@ class Gdpr {
     }
 
     static popupJsOutput (configuration) {
-        let linkCode = ``;
+        let linkCode = '';
 
         if (configuration.behaviour !== 'badge') {
             linkCode = `
@@ -240,8 +251,8 @@ class Gdpr {
 
                 for (var i = 0; i < triggerLinks.length; i++) {
                     triggerLinks[i].addEventListener('click', function(e) {
-                        e.preventDefault();
-                        popup.classList.add('cookie-popup--is-sticky');
+                        if (e) e.preventDefault();
+                        popup.classList.add('privc-popup--is-sticky');
                     });
                 }
             `;
@@ -250,6 +261,11 @@ class Gdpr {
         let output = /*html*/`
         <script>
             (function() {
+                var w = window,
+                    d = document,
+                    DQSA = d.querySelectorAll.bind(d)
+                    ;
+
                 if (!Array.isArray) Array.isArray = function(arg) {
                     return Object.prototype.toString.call(arg) === '[object Array]';
                 }
@@ -261,8 +277,18 @@ class Gdpr {
                         (arg.length === 0 || (typeof arg[0] === 'object' && arg[0].nodeType > 0));
                 }
 
-                function addScript (src, inline) {
-                    var argObjArr;
+                if (typeof Node.prototype.contains !== 'function') Node.prototype.contains = function contains(node) {
+                    if (!(0 in arguments)) throw new TypeError('1 argument is required');
+                    do { if (this === node) return true; }
+                    while (node = node && node.parentNode);
+                    return false;
+                }
+                if (typeof Element.prototype.contains !== 'function') Element.prototype.contains = Node.prototype.contains;
+                if (typeof d.contains !== 'function') d.contains = Node.prototype.contains;
+
+                function addScript (src, inline, options) {
+                    var argObjArr,
+                        _options = options || {};
                     if (typeof src === 'object') {
                         if (Array.isArray(src) || isNodeList(src)) {
                             if (!src.length) return;
@@ -272,69 +298,158 @@ class Gdpr {
                     
                     for (var i = 0; i < argObjArr.length; i++) {
                         if (argObjArr[i].src || argObjArr[i].text ) {
-                            var newScript = document.createElement('script');
+                            var newScript = d.createElement('script');
                             if (argObjArr[i].src) newScript.setAttribute('src', argObjArr[i].src);
                             if (argObjArr[i].text) newScript.text = argObjArr[i].text;
                             if (argObjArr[i].async) newScript.setAttribute('async', 'async');
                             if (argObjArr[i].defer) newScript.setAttribute('defer', 'defer');
                             if (argObjArr[i].crossorigin) newScript.setAttribute('crossorigin', argObjArr[i].crossorigin);
-                            document.body.appendChild(newScript);
+                            if (_options.atOriginalLocation && d.contains(argObjArr[i])) {
+                                if(argObjArr[i].nextSibling) argObjArr[i].parentNode.insertBefore(newScript, argObjArr[i].nextSibling);
+                                else argObjArr[i].parentNode.appendChild(newScript);
+                            }
+                            else d.body.appendChild(newScript);
                         }
                     }
                 }
 
-                var popup = document.querySelector('.js-cookie-popup');
-                var checkboxes = popup.querySelectorAll('input[type="checkbox"]');
-                var save = popup.querySelector('button');
-                var currentConfig = localStorage.getItem('publii-gdpr-allowed-cookies');
-                var blockedScripts = document.querySelectorAll('script[type^="gdpr-blocker/"], script[type^="{{"][type*="gdprScriptBlocker"][type$="}}"]');
-                ${linkCode}
-
-                popup.addEventListener('click', function() {
-                    if (!popup.classList.contains('cookie-popup--is-sticky')) popup.classList.add('cookie-popup--is-sticky');
-                });
-
-                save.addEventListener('click', function(e) {
-                    e.preventDefault();
-                    e.stopPropagation();
-                    popup.classList.remove('cookie-popup--is-sticky');
-                    var allowedGroups = [];
-
-                    var scriptsSelector = '';
-                    for (var i = 0; i < checkboxes.length; i++) {
-                        if (checkboxes[i].checked) {
-                            var groupName = checkboxes[i].getAttribute('name').replace('gdpr-', '');
-                            allowedGroups.push(groupName);
-                            if (scriptsSelector !== '') scriptsSelector += ', '; 
-                            scriptsSelector += 'script[type="gdpr-blocker/' + groupName + '"], script[type^="{{"][type*="gdprScriptBlocker"][type*=\\\'"' + groupName + '"\\\'][type$="}}"]';
-                        }
+                var popup = d.querySelector('.js-privc-popup'),
+                    currentConfig = localStorage.getItem('publii-gdpr-allowed-cookies'),
+                    consentJson = localStorage.getItem('publii-gdpr-consent-json') || '{}',
+                    allowedGroups = w.publii_gdpr_allowed_cookies = (currentConfig) ? currentConfig.split(',') : [],
+                    blockedScripts = DQSA('script[type^="gdpr-blocker/"], script[type^="{{"][type*="gdprScriptBlocker"][type$="}}"]'),
+                    hasNewConsentChoices = false
+                    addScriptsBySelector =  function (sel) {
+                        var scr = (sel) ? DQSA(sel) : null;
+                        if (scr && scr.length) addScript(scr, void(0), { atOriginalLocation: true });
+                    },
+                    getScriptSelector = function (grName) {
+                        return 'script[type="gdpr-blocker/' + grName + '"], script[type^="{{"][type*="gdprScriptBlocker"][type*=\\\'"' + grName + '"\\\'][type$="}}"]';
                     }
-                    var scripts = (scriptsSelector !== '') ? document.querySelectorAll(scriptsSelector) : null;
-                    if (scripts && scripts.length) addScript(scripts);
+                    ;
 
-                    localStorage.setItem('publii-gdpr-allowed-cookies', allowedGroups.join(','));
-                    popup.classList.remove('cookie-popup--is-sticky');
+                ${linkCode}
+                
+                if (popup) {
+                    var cbs = popup.querySelectorAll('input[type="checkbox"]'),
+                        btnSave = popup.querySelector('button.privc-popup__save'),
+                        btnAllowAll = popup.querySelector('button.privc-popup__allowAll'),
+                        consent = (consentJson && JSON) ? JSON.parse(consentJson) : {},
+                        consentJsonUpdated = false,
+                        dateNow = new Date(),
+                        allowsTracking = (function () {
+                            var dnt =
+                                w.doNotTrack ||
+                                navigator.doNotTrack ||
+                                navigator.msDoNotTrack
+                            return !(dnt === 1 || dnt === '1' || dnt === 'yes' 
+                                || (w.external && typeof w.external.msTrackingProtectionEnabled === 'function' && w.external.msTrackingProtectionEnabled()));
+                        })()
+                        ;
+                    if (!consent.group) consent.group = {};
 
-                    setTimeout(function () {
-                        if (currentConfig !== null) window.location.reload();
-                    }, 250);
-                });
+                    if (cbs.length) for (var i = 0; i < cbs.length; i++) {
+                        var groupName = cbs[i].getAttribute('name').replace('gdpr-', ''),
+                            cg = consent.group[groupName]
+                            ;
+                        if (groupName && !cg) {
+                            if (allowedGroups.includes(groupName)) {
+                                consent.group[groupName] = {
+                                    consent: true,
+                                    consentDate: dateNow
+                                };
+                                consentJsonUpdated = true;
+                            }
+                            else hasNewConsentChoices = true;
+                        }
+                        if (groupName && (allowsTracking && !(cg && cg.consent === false)) || allowedGroups.includes(groupName)) cbs[i].checked = true;
+                    }
 
-                if (currentConfig === null) {
-                    popup.classList.add('cookie-popup--is-sticky');
-                } else if (currentConfig !== '') {
-                    var allowedGroups = currentConfig.split(',');
+                    popup.addEventListener('click', function() {
+                        if (!popup.classList.contains('privc-popup--is-sticky')) popup.classList.add('privc-popup--is-sticky');
+                    });
 
+                    if (btnSave) btnSave.addEventListener('click', function(e) {
+                        if (e) { 
+                            e.preventDefault();
+                            e.stopPropagation();
+                        }
+                        popup.classList.remove('privc-popup--is-sticky');
+                        var allowedGroups = [],
+                            scriptsSelector = '',
+                            dateNow = new Date()
+                            ;
+                        for (var i = 0; i < cbs.length; i++) {
+                            var groupName = cbs[i].getAttribute('name').replace('gdpr-', '');
+                            if (groupName) {
+                                consent.group[groupName] = { 
+                                    consent: !!(cbs[i].checked),
+                                    consentDate: dateNow
+                                };
+                                if (cbs[i].checked) {
+                                    allowedGroups.push(groupName);
+                                    if (scriptsSelector !== '') scriptsSelector += ', '; 
+                                    scriptsSelector += getScriptSelector(groupName);
+                                    if (typeof gtag === 'function') {
+                                        try {
+                                            switch (groupName.toLowerCase()) {
+                                                case 'analytics':
+                                                    gtag('consent', 'update', {
+                                                        'analytics_storage': 'granted'
+                                                    });
+                                                break;
+                                                case 'advertising':
+                                                    gtag('set', 'ads_data_redaction', false);
+                                                    gtag('consent', 'update', {
+                                                        'ad_storage': 'granted'
+                                                    });
+                                                break;
+                                            }
+                                        }
+                                        catch {}
+                                    }
+                                }
+                            } 
+                        }
+                        w.publii_gdpr_allowed_cookies = allowedGroups;
+                        if (!consent.firstConsentDate) consent.firstConsentDate = dateNow;
+                        consent.lastConsentDate = dateNow;
+                        localStorage.setItem('publii-gdpr-allowed-cookies', allowedGroups.join(','));
+                        localStorage.setItem('publii-gdpr-consent-json', JSON.stringify(consent));
+
+                        addScriptsBySelector(scriptsSelector);
+                        popup.classList.remove('privc-popup--is-sticky');
+
+                        setTimeout(function () {
+                            if (currentConfig !== null) w.location.reload();
+                        }, 250);
+
+                        return false;
+                    });
+
+                    if (btnAllowAll) btnAllowAll.addEventListener('click', function(e) {
+                        if (e) { 
+                            e.preventDefault();
+                            e.stopPropagation();
+                        }
+                        if (cbs.length) for (var i = 0; i < cbs.length; i++) cbs[i].checked = true;
+                        btnSave.click();
+                        return false;
+                    });
+
+                    if (currentConfig === null || hasNewConsentChoices) popup.classList.add('privc-popup--is-sticky');
+                    if (consentJsonUpdated) localStorage.setItem('publii-gdpr-consent-json', JSON.stringify(consent));
+                }
+
+                if (currentConfig !== null && currentConfig !== '') {
                     var scriptsSelector = '';
                     for (var i = 0; i < allowedGroups.length; i++) {
                         if (scriptsSelector !== '') scriptsSelector += ', '; 
-                        scriptsSelector += 'script[type="gdpr-blocker/' + allowedGroups[i] + '"], script[type^="{{"][type*="gdprScriptBlocker"][type*=\\\'"' + allowedGroups[i] + '"\\\'][type$="}}"]';
-                        var checkbox = popup.querySelector('input[type="checkbox"][name="gdpr-' + allowedGroups[i] + '"]');
-                        if (checkbox) checkbox.checked = true;
+                        scriptsSelector += getScriptSelector(allowedGroups[i]);
                     }
-                    var scripts = (scriptsSelector !== '') ? document.querySelectorAll(scriptsSelector) : null;
-                    if (scripts && scripts.length) addScript(scripts);
-                }
+                    addScriptsBySelector(scriptsSelector);
+               }
+
             })();
         </script>`;
 
@@ -350,7 +465,7 @@ class Gdpr {
             return '#not-specified';
         }
 
-        let result = renderer.cachedItems.posts[configuration.articleId];
+        var result = renderer.cachedItems.posts[configuration.articleId];
 
         if (!result) {
             return '#not-found';
