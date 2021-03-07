@@ -17,6 +17,8 @@ class PreviewEvents {
         this.app = appInstance;
 
         ipcMain.on('app-preview-render', function (event, siteData) {
+            console.log('app-preview-render');
+            debugger;
             if(siteData.site && siteData.theme) {
                 let postID = false;
                 let postData = false;
@@ -47,6 +49,13 @@ class PreviewEvents {
      * @param event
      */
     renderSite(site, pageToRender, postData, event) {
+        console.log('* renderSite called with:');
+        console.log('* * site:', site);
+        console.log('* * pageToRender:', pageToRender);
+        console.log('* * postData:', postData);
+        console.log('* * event:', event);
+        debugger;
+
         let self = this;
         let resultsRetrieved = false;
         let rendererProcess = childProcess.fork(__dirname + '/../workers/renderer/preview', {
@@ -69,12 +78,15 @@ class PreviewEvents {
             }
         }
 
+        console.log('* * setting rendererProcess on disconnect handler');
         rendererProcess.on('disconnect', function(data) {
             setTimeout(function() {
                 if(!resultsRetrieved) {
                     let errorDesc = 'Checkout the rendering-errors.log and rendering-process.log files under Tools -> Log viewer. ';
                     let errorTitle = 'Rendering process crashed';
 
+                    console.log('\n* ! (on disconnect) rendering failed, data:\n', JSON.stringify(data));
+                    
                     if (data && data.result && data.result[0] && data.result[0].message) {
                         errorTitle = 'Rendering process failed';
                         errorDesc = data.result[0].message + "\n\n" + data.result[0].desc;
@@ -90,7 +102,8 @@ class PreviewEvents {
             }, 1000);
         });
 
-        rendererProcess.send({
+        const rendererProcessSendObj = 
+        {
             type: 'dependencies',
             appDir: this.app.appDir,
             sitesDir: this.app.sitesDir,
@@ -101,7 +114,21 @@ class PreviewEvents {
             singlePageMode: singlePageMode,
             homepageOnlyMode: homepageOnlyMode,
             previewLocation: this.app.appConfig.previewLocation
-        });
+        }; 
+        console.log('* * starting rendererProcess.send with object:\n', JSON.stringify(rendererProcessSendObj));
+        rendererProcess.send(rendererProcessSendObj);
+        // rendererProcess.send({
+        //     type: 'dependencies',
+        //     appDir: this.app.appDir,
+        //     sitesDir: this.app.sitesDir,
+        //     siteConfig: this.app.sites[site],
+        //     postID: pageToRender,
+        //     postData: postData,
+        //     previewMode: previewMode,
+        //     singlePageMode: singlePageMode,
+        //     homepageOnlyMode: homepageOnlyMode,
+        //     previewLocation: this.app.appConfig.previewLocation
+        // });
 
         rendererProcess.on('message', function(data) {
             resultsRetrieved = true;
@@ -116,6 +143,8 @@ class PreviewEvents {
                 } else {
                     let errorDesc = 'Checkout the rendering-errors.log and rendering-process.log files under Tools -> Log viewer. ';
                     let errorTitle = 'Rendering process crashed';
+
+                    console.log('\n* ! (on message) rendering failed, data:\n', JSON.stringify(data));
 
                     if (data.result && data.result[0] && data.result[0].message) {
                         errorTitle = 'Rendering process failed';
