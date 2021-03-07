@@ -1070,6 +1070,17 @@
 
                         <field
                             v-if="advanced.gdpr.enabled"
+                            id="gdpr-allow-all-button-label"
+                            label="Allow all button label">
+                            <text-input
+                                id="gdpr-allow-all-button-label"
+                                v-model="advanced.gdpr.allowAllButtonLabel"
+                                :spellcheck="$store.state.currentSite.config.spellchecking"
+                                slot="field" />
+                        </field>
+
+                        <field
+                            v-if="advanced.gdpr.enabled"
                             id="gdpr-behaviour"
                             label="Open Popup window by">
                             <dropdown

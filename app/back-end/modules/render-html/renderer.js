@@ -26,7 +26,9 @@ const RendererContextSearch = require('./contexts/search.js');
 const themeConfigValidator = require('./validators/theme-config.js');
 const UtilsHelper = require('./../../helpers/utils');
 const Sitemap = require('./helpers/sitemap.js');
+console.log('before require gdpr');
 const Gdpr = require('./helpers/gdpr.js');
+console.log('after require gdpr');
 
 // Default config
 const defaultAstCurrentSiteConfig = require('./../../../config/AST.currentSite.config');
@@ -169,32 +171,45 @@ class Renderer {
      * Prepares website to be rendered
      */
     preparePageToRender() {
+        console.log('** preparePageToRender BEGIN ');
+        console.log('** * preparePageToRender loadSiteConfig ');
         this.loadSiteConfig();
 
         this.sendProgress(1, 'Loading website config');
 
         console.time("CONFIG");
+        console.log('** * preparePageToRender loadSiteTranslations ');
         this.loadSiteTranslations();
+        console.log('** * preparePageToRender loadDataFromDB ');
         this.loadDataFromDB();
+        console.log('** * preparePageToRender  loadThemeConfig');
         this.loadThemeConfig();
+        console.log('** * preparePageToRender  loadThemeFiles');
         this.loadThemeFiles();
+        console.log('** * preparePageToRender  registerHelpers');
         this.registerHelpers();
+        console.log('** * preparePageToRender  registerThemeHelpers');
         this.registerThemeHelpers();
         console.timeEnd("CONFIG");
 
         this.sendProgress(2, 'Loading website assets');
+        console.log('** * preparePageToRender  loadContentStructure');
         this.loadContentStructure();
         this.sendProgress(5, 'Loading content structure');
 
+        console.log('** * preparePageToRender  loadCommonData');
         this.loadCommonData();
         this.sendProgress(10, 'Preloading common data');
+        console.log('** * preparePageToRender  generatePartials');
         this.generatePartials();
+        console.log('** preparePageToRender END ');
     }
 
     /**
      * Creates website content
      */
     async generateWWW() {
+        console.log('** generateWWW BEGIN ');
         this.sendProgress(11, 'Generating frontpage');
         this.generateFrontpage();
         this.sendProgress(20, 'Generating posts');
@@ -213,6 +228,7 @@ class Renderer {
         await this.copyFiles();
         await this.generateSitemap();
         this.sendProgress(90, 'Finishing the render process');
+        console.log('** generateWWW END ');
     }
 
     /**
@@ -345,6 +361,8 @@ class Renderer {
      * Create theme custom helpers
      */
     registerThemeHelpers() {
+        console.log('** registerThemeHelpers BEGIN ');
+
         let helpersFilePath = path.join(this.themeDir, 'helpers.js');
         let overridedHelpersFilePath = UtilsHelper.fileIsOverrided(this.themeDir, helpersFilePath);
 
@@ -360,11 +378,52 @@ class Renderer {
         // Include the helpers from the helpers.js file
         let themeHelpers;
         
+        console.log('** * this.themeConfig.renderer.includeHandlebarsInHelpers:', this.themeConfig.renderer.includeHandlebarsInHelpers);
+
+
+        const includeHelpersExceptions = [];
+        let includeHelpersSucceeded = false;
         if (this.themeConfig.renderer.includeHandlebarsInHelpers) {
-            themeHelpers = this.requireWithNoCache(helpersFilePath, Handlebars);
-        } else {
-            themeHelpers = this.requireWithNoCache(helpersFilePath);
-        }
+            console.log('** * requireWithNoCache(', helpersFilePath, ', ', Handlebars, ') ');
+            try {
+                themeHelpers = this.requireWithNoCache(helpersFilePath, Handlebars);
+                includeHelpersSucceeded = true;
+            } catch (ex) {
+                includeHelpersExceptions.push(`ERROR while including theme helper file '${helpersFilePath}' with 'includeHandlebarsInHelper' = true'`);    
+                includeHelpersExceptions.push(ex);
+                console.log(`ERROR while including theme helper file '${helpersFilePath}' with 'includeHandlebarsInHelper' = true. Retrying with 'includeHandlebarsInHelper' = false.`);
+                console.log('Checkout the rendering-errors.log file under Tools -> Log viewer.');
+            }
+        } 
+        if (!this.themeConfig.renderer.includeHandlebarsInHelpers || includeHelpersExceptions.length) {
+            console.log('** * requireWithNoCache(', helpersFilePath, ') ');
+            try {
+                themeHelpers = this.requireWithNoCache(helpersFilePath);
+                includeHelpersSucceeded = true;
+            } catch (ex) {
+                includeHelpersExceptions.push(`ERROR while including theme helper file '${helpersFilePath}' with 'includeHandlebarsInHelper' = false'`);    
+                includeHelpersExceptions.push(ex);
+                console.log(`ERROR while including theme helper file '${helpersFilePath}' with 'includeHandlebarsInHelper' = false'`);
+                console.log('Checkout the rendering-errors.log file under Tools -> Log viewer.');
+            }
+        }                
+
+        if (includeHelpersExceptions.length) includeHelpersExceptions.forEach(ex => console.error(ex));
+        if (!includeHelpersSucceeded) throw includeHelpersExceptions[includeHelpersExceptions.length - 1];                
+
+
+        // try {
+        //     if (this.themeConfig.renderer.includeHandlebarsInHelpers) {
+        //         console.log('** * requireWithNoCache(', helpersFilePath, ', ', Handlebars, ') ');
+        //         themeHelpers = this.requireWithNoCache(helpersFilePath, Handlebars);
+        //     } else {
+        //         console.log('** * requireWithNoCache(', helpersFilePath, ') ');
+        //         themeHelpers = this.requireWithNoCache(helpersFilePath);
+        //     }                
+        // } catch (ex) {
+        //     console.error('** !! exception in requireWithNoCache:', ex);
+        //     throw ex;
+        // }
 
         // Check if the returned value is an object
         if(themeHelpers.constructor !== Object) {
@@ -376,8 +435,13 @@ class Renderer {
 
         // Register all helpers
         for(let helperName of helperNames) {
+            console.log('** * registerHelper helperName:', helperName);
+            console.log('themeHelpers[' + helperName + ']:');
+            console.dir(themeHelpers[helperName]);
             Handlebars.registerHelper(helperName, themeHelpers[helperName]);
         }
+
+        console.log('** registerThemeHelpers END ');
     }
 
     /*
