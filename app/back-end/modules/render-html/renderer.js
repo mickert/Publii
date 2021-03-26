@@ -7,31 +7,29 @@ const CleanCSS = require('clean-css');
 const normalizePath = require('normalize-path');
 
 // Internal packages
-const slug = require('./../../helpers/slug');
-const sqlite = require('better-sqlite3');
-const URLHelper = require('./helpers/url.js');
-const FilesHelper = require('./helpers/files.js');
-const PostViewSettingsHelper = require('./helpers/post-view-settings.js');
-const Themes = require('../../themes.js');
-const TemplateHelper = require('./helpers/template.js');
-const RendererContext = require('./renderer-context.js');
-const RendererContextPost = require('./contexts/post.js');
-const RendererContextPostPreview = require('./contexts/post-preview.js');
-const RendererContextTag = require('./contexts/tag.js');
-const RendererContextAuthor = require('./contexts/author.js');
-const RendererContextHome = require('./contexts/home.js');
-const RendererContextFeed = require('./contexts/feed.js');
-const RendererContext404 = require('./contexts/404.js');
-const RendererContextSearch = require('./contexts/search.js');
-const themeConfigValidator = require('./validators/theme-config.js');
-const UtilsHelper = require('./../../helpers/utils');
-const Sitemap = require('./helpers/sitemap.js');
-console.log('before require gdpr');
-const Gdpr = require('./helpers/gdpr.js');
-console.log('after require gdpr');
+const slug = requireLogFail('./../../helpers/slug');
+const sqlite = requireLogFail('better-sqlite3');
+const URLHelper = requireLogFail('./helpers/url.js');
+const FilesHelper = requireLogFail('./helpers/files.js');
+const PostViewSettingsHelper = requireLogFail('./helpers/post-view-settings.js');
+const Themes = requireLogFail('../../themes.js');
+const TemplateHelper = requireLogFail('./helpers/template.js');
+const RendererContext = requireLogFail('./renderer-context.js');
+const RendererContextPost = requireLogFail('./contexts/post.js');
+const RendererContextPostPreview = requireLogFail('./contexts/post-preview.js');
+const RendererContextTag = requireLogFail('./contexts/tag.js');
+const RendererContextAuthor = requireLogFail('./contexts/author.js');
+const RendererContextHome = requireLogFail('./contexts/home.js');
+const RendererContextFeed = requireLogFail('./contexts/feed.js');
+const RendererContext404 = requireLogFail('./contexts/404.js');
+const RendererContextSearch = requireLogFail('./contexts/search.js');
+const themeConfigValidator = requireLogFail('./validators/theme-config.js');
+const UtilsHelper = requireLogFail('./../../helpers/utils');
+const Sitemap = requireLogFail('./helpers/sitemap.js');
+const Gdpr = requireLogFail('./helpers/gdpr.js');
 
 // Default config
-const defaultAstCurrentSiteConfig = require('./../../../config/AST.currentSite.config');
+const defaultAstCurrentSiteConfig = requireLogFail('./../../../config/AST.currentSite.config');
 
 /*
  * Class used to generate HTML output
@@ -158,130 +156,202 @@ class Renderer {
      * Renders full preview of website
      */
     async renderFullPreview() {
-        console.time("RENDERING");
-        this.preparePageToRender();
-        await this.generateWWW();
-        this.generateAMP();
-        console.timeEnd("RENDERING");
-        this.sendProgress(100, 'Website files are ready to upload');
-        this.db.close();
+        let logStep = '';
+        try {
+            console.time("RENDERING");
+            logStep = 'preparePageToRender';
+            this.preparePageToRender();
+            logStep = 'generateWWW';
+            await this.generateWWW();
+            logStep = 'generateAMP';
+            this.generateAMP();
+            console.timeEnd("RENDERING");
+            this.sendProgress(100, 'Website files are ready to upload');
+            logStep = 'db.close';
+            this.db.close();
+        } catch (ex) {
+            console.error(`renderFullPreview(): Failed at step ${logStep} with: `, ex);
+            throw ex;
+        }
     }
 
     /**
      * Prepares website to be rendered
      */
     preparePageToRender() {
-        console.log('** preparePageToRender BEGIN ');
-        console.log('** * preparePageToRender loadSiteConfig ');
-        this.loadSiteConfig();
-
-        this.sendProgress(1, 'Loading website config');
-
-        console.time("CONFIG");
-        console.log('** * preparePageToRender loadSiteTranslations ');
-        this.loadSiteTranslations();
-        console.log('** * preparePageToRender loadDataFromDB ');
-        this.loadDataFromDB();
-        console.log('** * preparePageToRender  loadThemeConfig');
-        this.loadThemeConfig();
-        console.log('** * preparePageToRender  loadThemeFiles');
-        this.loadThemeFiles();
-        console.log('** * preparePageToRender  registerHelpers');
-        this.registerHelpers();
-        console.log('** * preparePageToRender  registerThemeHelpers');
-        this.registerThemeHelpers();
-        console.timeEnd("CONFIG");
-
-        this.sendProgress(2, 'Loading website assets');
-        console.log('** * preparePageToRender  loadContentStructure');
-        this.loadContentStructure();
-        this.sendProgress(5, 'Loading content structure');
-
-        console.log('** * preparePageToRender  loadCommonData');
-        this.loadCommonData();
-        this.sendProgress(10, 'Preloading common data');
-        console.log('** * preparePageToRender  generatePartials');
-        this.generatePartials();
-        console.log('** preparePageToRender END ');
+        let logStep = '';
+        try {
+            logStep = 'loadSiteConfig';
+            this.loadSiteConfig();
+            this.sendProgress(1, 'Loading website config');
+    
+            console.time("CONFIG");
+            logStep = 'loadSiteTranslations';
+            this.loadSiteTranslations();
+            logStep = 'loadDataFromDB';
+            this.loadDataFromDB();
+            logStep = 'loadThemeConfig';
+            this.loadThemeConfig();
+            logStep = 'loadThemeFiles';
+            this.loadThemeFiles();
+            logStep = 'registerHelpers';
+            this.registerHelpers();
+            logStep = 'registerThemeHelpers';
+            this.registerThemeHelpers();
+            console.timeEnd("CONFIG");
+    
+            this.sendProgress(2, 'Loading website assets');
+            logStep = 'loadContentStructure';
+            this.loadContentStructure();
+            this.sendProgress(5, 'Loading content structure');
+    
+            logStep = 'loadCommonData';
+            this.loadCommonData();
+            this.sendProgress(10, 'Preloading common data');
+            logStep = 'generatePartials';
+            this.generatePartials();
+            logStep = '';
+        } catch (ex) {
+            console.error(`preparePageToRender(): Failed at step ${logStep} with: `, ex);
+            throw ex;
+        }
     }
 
     /**
      * Creates website content
      */
     async generateWWW() {
-        console.log('** generateWWW BEGIN ');
-        this.sendProgress(11, 'Generating frontpage');
-        this.generateFrontpage();
-        this.sendProgress(20, 'Generating posts');
-        this.generatePosts();
-        this.sendProgress(60, 'Generating tag pages');
-        this.generateTags();
-        this.sendProgress(70, 'Generating author pages');
-        this.generateAuthors();
-        this.siteConfig.domain = this.siteConfig.originalDomain;
-        this.sendProgress(75, 'Generating other pages');
-        this.generate404s();
-        this.generateSearch();
-        this.generateFeeds();
-        this.generateCSS();
-        this.sendProgress(80, 'Copying files');
-        await this.copyFiles();
-        await this.generateSitemap();
-        this.sendProgress(90, 'Finishing the render process');
-        console.log('** generateWWW END ');
+        let logStep = '';
+        try {
+            this.sendProgress(11, 'Generating frontpage');
+            logStep = 'generateFrontpage';
+            this.generateFrontpage();
+            this.sendProgress(20, 'Generating posts');
+            logStep = 'generatePosts';
+            this.generatePosts();
+            this.sendProgress(60, 'Generating tag pages');
+            logStep = 'generateTags';
+            this.generateTags();
+            this.sendProgress(70, 'Generating author pages');
+            logStep = 'generateAuthors';
+            this.generateAuthors();
+            this.siteConfig.domain = this.siteConfig.originalDomain;
+            this.sendProgress(75, 'Generating other pages');
+            logStep = 'generate404s';
+            this.generate404s();
+            logStep = 'generateSearch';
+            this.generateSearch();
+            logStep = 'generateFeeds';
+            this.generateFeeds();
+            logStep = 'generateCSS';
+            this.generateCSS();
+            this.sendProgress(80, 'Copying files');
+            logStep = 'copyFiles';
+            await this.copyFiles();
+            logStep = 'generateSitemap';
+            await this.generateSitemap();
+            this.sendProgress(90, 'Finishing the render process');
+            logStep = '';
+        } catch (ex) {
+            console.error(`generateWWW(): Failed at step ${logStep} with: `, ex);
+            throw ex;
+        }
     }
 
     /**
      * Renders post preview
      */
     renderPostPreview() {
-        this.loadSiteConfig();
-        this.loadSiteTranslations();
-        this.loadDataFromDB();
-        this.loadThemeConfig();
-        this.loadThemeFiles();
-        this.registerHelpers();
-        this.registerThemeHelpers();
-        this.loadContentStructure();
-        this.loadCommonData();
-        this.generatePartials();
-        this.generatePost();
-        this.generateCSS();
-
-        FilesHelper.copyAssetsFiles(this.themeDir, this.outputDir, this.themeConfig);
-        FilesHelper.copyMediaFiles(this.inputDir, this.outputDir, [this.postID]);
-
-        process.send({
-            type: 'app-rendering-preview',
-            result: true
-        });
+        let logStep = '';
+        try {
+            logStep = 'loadSiteConfig';
+            this.loadSiteConfig();
+            logStep = 'loadSiteTranslations';
+            this.loadSiteTranslations();
+            logStep = 'loadDataFromDB';
+            this.loadDataFromDB();
+            logStep = 'loadThemeConfig';
+            this.loadThemeConfig();
+            logStep = 'loadThemeFiles';
+            this.loadThemeFiles();
+            logStep = 'registerHelpers';
+            this.registerHelpers();
+            logStep = 'registerThemeHelpers';
+            this.registerThemeHelpers();
+            logStep = 'loadContentStructure';
+            this.loadContentStructure();
+            logStep = 'loadCommonData';
+            this.loadCommonData();
+            logStep = 'generatePartials';
+            this.generatePartials();
+            logStep = 'generatePost';
+            this.generatePost();
+            logStep = 'generateCSS';
+            this.generateCSS();
+    
+            logStep = 'FilesHelper.copyAssetsFiles';
+            FilesHelper.copyAssetsFiles(this.themeDir, this.outputDir, this.themeConfig);
+            logStep = 'FilesHelper.copyMediaFiles';
+            FilesHelper.copyMediaFiles(this.inputDir, this.outputDir, [this.postID]);
+    
+            logStep = 'process.send';
+            process.send({
+                type: 'app-rendering-preview',
+                result: true
+            });                
+        } catch (ex) {
+            console.error(`renderPostPreview(): Failed at step ${logStep} with: `, ex);
+            throw ex;
+        }
     }
 
     /**
      * Renders homepage preview
      */
     renderHomepagePreview() {
-        this.loadSiteConfig();
-        this.loadSiteTranslations();
-        this.loadDataFromDB();
-        this.loadThemeConfig();
-        this.loadThemeFiles();
-        this.registerHelpers();
-        this.registerThemeHelpers();
-        this.loadContentStructure();
-        this.loadCommonData();
-        this.generatePartials();
-        this.generateFrontpage();
-        this.generateCSS();
-
-        let postIDs = Object.keys(this.cachedItems.posts);
-        FilesHelper.copyAssetsFiles(this.themeDir, this.outputDir, this.themeConfig);
-        FilesHelper.copyMediaFiles(this.inputDir, this.outputDir, postIDs);
-
-        process.send({
-            type: 'app-rendering-preview',
-            result: true
-        });
+        let logStep = '';
+        try {
+            logStep = 'loadSiteConfig';
+            this.loadSiteConfig();
+            logStep = 'loadSiteTranslations';
+            this.loadSiteTranslations();
+            logStep = 'loadDataFromDB';
+            this.loadDataFromDB();
+            logStep = 'loadThemeConfig';
+            this.loadThemeConfig();
+            logStep = 'loadThemeFiles';
+            this.loadThemeFiles();
+            logStep = 'registerHelpers';
+            this.registerHelpers();
+            logStep = 'registerThemeHelpers';
+            this.registerThemeHelpers();
+            logStep = 'loadContentStructure';
+            this.loadContentStructure();
+            logStep = 'loadCommonData';
+            this.loadCommonData();
+            logStep = 'generatePartials';
+            this.generatePartials();
+            logStep = 'generateFrontpage';
+            this.generateFrontpage();
+            logStep = 'generateCSS';
+            this.generateCSS();
+    
+            logStep = 'get postIDs';
+            let postIDs = Object.keys(this.cachedItems.posts);
+            logStep = 'FilesHelper.copyAssetsFiles';
+            FilesHelper.copyAssetsFiles(this.themeDir, this.outputDir, this.themeConfig);
+            logStep = 'FilesHelper.copyMediaFiles';
+            FilesHelper.copyMediaFiles(this.inputDir, this.outputDir, postIDs);
+    
+            logStep = 'process.send';
+            process.send({
+                type: 'app-rendering-preview',
+                result: true
+            });    
+        } catch (ex) {
+            console.error(`renderHomepagePreview(): Failed at step ${logStep} with: `, ex);
+            throw ex;
+        }
     }
 
     /**
@@ -339,7 +409,7 @@ class Renderer {
      * Create built-in helpers
      */
     registerHelpers() {
-        const HandlebarsHelpers = require('./handlebars/helpers/_modules.js');
+        const HandlebarsHelpers = requireLogFail('./handlebars/helpers/_modules.js');
 
         // Get helpers names
         let helperNames = Object.keys(HandlebarsHelpers);
@@ -1855,11 +1925,22 @@ class Renderer {
         delete require.cache[require.resolve(module)];
 
         if (params) {
-            return require(module)(params);
+            return requireLogFail(module, params);
         }
 
-        return require(module);
+        return requireLogFail(module);
     }
 }
 
 module.exports = Renderer;
+
+function requireLogFail(module, params = null) {
+    try {
+        if (params) return require(module)(params);
+        return require(module);
+    }
+    catch (ex) {
+        console.error(`requireLogFail(): Require of file ${JSON.stringify(module)}${(params) ? ` (params: ${JSON.stringify(params)})`: ''} failed with:`, ex);
+        throw ex;
+    }
+}
