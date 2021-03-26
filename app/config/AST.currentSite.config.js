@@ -114,6 +114,7 @@ const AstCurrentSiteConfig = {
                 { 'name': 'Marketing', 'id': 'marketing' }
             ],
             saveButtonLabel: 'Save',
+            allowAllButtonLabel: 'Allow all',
             behaviour: 'badge',
             badgeLabel: 'Cookie Policy',
             behaviourLink: '#cookie-settings'

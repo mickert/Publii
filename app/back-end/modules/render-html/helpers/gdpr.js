@@ -46,7 +46,7 @@ class Gdpr {
                     ${configuration.saveButtonLabel}
                 </button>
                 <button type="submit" class="privc-popup__allowAll">
-                    ${configuration.allowAllButtonLabel || 'Toestaan'}
+                    ${configuration.allowAllButtonLabel || 'Allow all'}
                 </button>
                 </p>
             </form>
